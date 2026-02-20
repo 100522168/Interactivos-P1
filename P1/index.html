@@ -2,22 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <!-- Viewport estándar para dispositivos móviles -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Destino cercano</title>
 
-  <!-- Leaflet CSS -->
+  <!-- CSS de Leaflet: estilos necesarios para que el mapa se vea correctamente -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
+    /* Elimina el margen por defecto del body */
     body { margin: 0; font-family: sans-serif; }
 
+    /* Panel de información en la parte superior */
     #info {
       padding: 10px;
-      background: #f0f0f0;
+      background: #f0f0f0; /* Fondo gris claro */
       text-align: center;
       font-size: 14px;
     }
 
+    /* El mapa ocupa toda la pantalla menos el espacio del panel de info */
     #map {
       height: calc(100vh - 80px);
     }
@@ -25,22 +29,24 @@
 </head>
 <body>
 
+  <!-- Panel superior con instrucciones y botón para borrar el destino -->
   <div id="info">
     📍 Toca el mapa para establecer tu destino
     <br>
     <button id="btn-clear">Borrar destino</button>
   </div>
 
+  <!-- Contenedor donde Leaflet renderizará el mapa -->
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
+  <!-- JavaScript de Leaflet: librería para mapas interactivos -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Eruda: consola de depuración en el móvil -->
+  <!-- Eruda: consola de depuración para usar en el móvil -->
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
+  <script>eruda.init();</script> <!-- Inicializa Eruda -->
 
-  <!-- Nuestro código -->
+  <!-- Nuestro código JavaScript -->
   <script src="app.js"></script>
 
 </body>

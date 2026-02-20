@@ -2,24 +2,27 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <!-- Viewport estándar para móvil -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Acelerómetro</title>
 
   <style>
+    /* Elimina márgenes y padding por defecto de todos los elementos */
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #1a1a2e;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: #1a1a2e; /* Fondo oscuro azulado */
+      display: flex; /* Flexbox para centrar el contenido */
+      flex-direction: column; /* Elementos en columna */
+      align-items: center; /* Centra horizontalmente */
+      justify-content: center; /* Centra verticalmente */
+      height: 100vh; /* Ocupa toda la pantalla */
       font-family: sans-serif;
       color: white;
-      overflow: hidden;
+      overflow: hidden; /* Evita scroll */
     }
 
+    /* Panel de información fijo en la parte superior */
     #info {
       position: fixed;
       top: 10px;
@@ -28,6 +31,7 @@
       color: #aaa;
     }
 
+    /* Mensaje de estado fijo en la parte inferior */
     #estado {
       position: fixed;
       bottom: 20px;
@@ -36,65 +40,71 @@
       text-align: center;
     }
 
+    /* Campo de juego donde se mueve la bola */
     #campo {
-      position: relative;
-      width: 90vw;
-      height: 70vh;
+      position: relative; /* Necesario para posicionar bola y destino dentro */
+      width: 90vw; /* 90% del ancho de la pantalla */
+      height: 70vh; /* 70% del alto de la pantalla */
       background: #16213e;
       border: 2px solid #0f3460;
       border-radius: 16px;
-      overflow: hidden;
+      overflow: hidden; /* La bola no puede salir del campo visualmente */
     }
 
+    /* Círculo verde que marca el destino */
     #destino {
-      position: absolute;
+      position: absolute; /* Se posiciona dentro del campo */
       width: 60px;
       height: 60px;
-      background: rgba(0, 255, 100, 0.3);
-      border: 3px dashed #00ff64;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
+      background: rgba(0, 255, 100, 0.3); /* Verde semitransparente */
+      border: 3px dashed #00ff64; /* Borde verde punteado */
+      border-radius: 50%; /* Forma circular */
+      transform: translate(-50%, -50%); /* Centra el elemento en su posición */
     }
 
+    /* La bola que controla el usuario */
     #bola {
-      position: absolute;
+      position: absolute; /* Se posiciona dentro del campo */
       width: 40px;
       height: 40px;
-      background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: left 0.1s, top 0.1s;
-      box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+      background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b); /* Efecto 3D con gradiente */
+      border-radius: 50%; /* Forma circular */
+      transform: translate(-50%, -50%); /* Centra el elemento en su posición */
+      transition: left 0.1s, top 0.1s; /* Suaviza el movimiento */
+      box-shadow: 0 0 15px rgba(255, 107, 107, 0.6); /* Brillo rojo alrededor */
     }
 
+    /* Estado de la bola cuando llega al destino */
     #bola.ganando {
-      background: radial-gradient(circle at 35% 35%, #00ff64, #00b341);
-      box-shadow: 0 0 25px rgba(0, 255, 100, 0.8);
+      background: radial-gradient(circle at 35% 35%, #00ff64, #00b341); /* Cambia a verde */
+      box-shadow: 0 0 25px rgba(0, 255, 100, 0.8); /* Brillo verde más intenso */
     }
   </style>
 </head>
 <body>
 
+  <!-- Panel superior con instrucciones y datos del acelerómetro -->
   <div id="info">
     📱 Inclina el dispositivo para mover la bola hasta el destino
     <br>
     <span id="datos">Pitch: 0° | Roll: 0°</span>
   </div>
 
+  <!-- Campo de juego -->
   <div id="campo">
-    <div id="destino"></div>
-    <div id="bola"></div>
+    <div id="destino"></div> <!-- Círculo verde destino -->
+    <div id="bola"></div>    <!-- Bola que controla el usuario -->
   </div>
 
+  <!-- Mensaje de estado del juego -->
   <div id="estado">🎯 Lleva la bola al círculo verde</div>
 
-  <!-- Eruda para depuración en móvil -->
+  <!-- Eruda: consola de depuración para móvil -->
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
+  <script>eruda.init();</script> <!-- Inicializa Eruda -->
 
+  <!-- Nuestro código JavaScript -->
   <script src="app2.js"></script>
 
 </body>
 </html>
-
-
