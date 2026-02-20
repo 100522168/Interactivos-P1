@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acelerómetro</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    #info {
+      position: fixed;
+      top: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    #estado {
+      position: fixed;
+      bottom: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    #campo {
+      position: relative;
+      width: 90vw;
+      height: 70vh;
+      background: #16213e;
+      border: 2px solid #0f3460;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #destino {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(0, 255, 100, 0.3);
+      border: 3px dashed #00ff64;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #bola {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: left 0.1s, top 0.1s;
+      box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+    }
+
+    #bola.ganando {
+      background: radial-gradient(circle at 35% 35%, #00ff64, #00b341);
+      box-shadow: 0 0 25px rgba(0, 255, 100, 0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="info">
+    📱 Inclina el dispositivo para mover la bola hasta el destino
+    <br>
+    <span id="datos">Pitch: 0° | Roll: 0°</span>
+  </div>
+
+  <div id="campo">
+    <div id="destino"></div>
+    <div id="bola"></div>
+  </div>
+
+  <div id="estado">🎯 Lleva la bola al círculo verde</div>
+
+  <!-- Eruda para depuración en móvil -->
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+
+  <script src="app2.js"></script>
+
+</body>
+</html>
