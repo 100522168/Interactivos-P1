@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Pinch to Zoom</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #1a1a2e;
+      overflow: hidden;
+    }
+
+    #imagen {
+      width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+      touch-action: none;
+      cursor: grab;
+    }
+  </style>
+</head>
+<body>
+
+  <img id="imagen" src="https://picsum.photos/400/400" alt="Imagen interactiva" />
+
+  <!-- Eruda: consola de depuración en móvil -->
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+
+  <!-- Nuestro código -->
+  <script src="app3.js"></script>
+
+</body>
+</html>
