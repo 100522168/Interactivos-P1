@@ -120,3 +120,5 @@ function activarTeclado() {
     moverBola(pitch, roll);
   });
 }
+
+
