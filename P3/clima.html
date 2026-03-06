@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clima por Voz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --border: #1f2d45;
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --error: #f87171;
+      --success: #34d399;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    /* Fondo animado con partículas */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(56,189,248,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(129,140,248,0.07) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    /* CABECERA */
+    header {
+      text-align: center;
+    }
+
+    .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* BOTÓN MIC */
+    .mic-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Anillos de pulso */
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .ring-1 { width: 120px; height: 120px; }
+    .ring-2 { width: 160px; height: 160px; }
+    .ring-3 { width: 200px; height: 200px; }
+
+    .mic-btn.listening .ring {
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+    .mic-btn.listening .ring-2 { animation-delay: 0.4s; }
+    .mic-btn.listening .ring-3 { animation-delay: 0.8s; }
+
+    @keyframes pulse-ring {
+      0%   { opacity: 0.7; transform: scale(0.8); }
+      100% { opacity: 0;   transform: scale(1.2); }
+    }
+
+    .mic-btn {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+      z-index: 1;
+    }
+
+    .mic-btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 24px rgba(56,189,248,0.2);
+      transform: scale(1.04);
+    }
+
+    .mic-btn.listening {
+      border-color: var(--accent);
+      box-shadow: 0 0 32px rgba(56,189,248,0.35);
+    }
+
+    .mic-icon {
+      font-size: 2rem;
+      transition: transform 0.2s;
+    }
+
+    .mic-btn.listening .mic-icon {
+      animation: mic-bounce 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes mic-bounce {
+      from { transform: scale(1); }
+      to   { transform: scale(1.15); }
+    }
+
+    /* HINT TEXT */
+    .hint {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hint span {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* TRANSCRIPCIÓN */
+    #transcripcion {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent2);
+      min-height: 1.4rem;
+      text-align: center;
+      transition: opacity 0.3s;
+    }
+
+    /* CARD CLIMA */
+    .weather-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+      animation: fade-up 0.5s ease both;
+    }
+
+    .weather-card.visible {
+      display: flex;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .weather-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .weather-icon {
+      font-size: 2.8rem;
+      line-height: 1;
+    }
+
+    .weather-location {
+      font-size: 0.72rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .weather-desc {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 0.2rem;
+    }
+
+    .weather-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-unit {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-left: 0.2rem;
+    }
+
+    /* ESTADO / MENSAJES */
+    #estado {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      text-align: center;
+      min-height: 1.4rem;
+      transition: all 0.3s;
+    }
+
+    #estado.loading { color: var(--accent); }
+    #estado.error   { color: var(--error); }
+    #estado.ok      { color: var(--success); }
+
+    /* SPINNER */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- CABECERA -->
+  <header>
+    <p class="label">Práctica Fetch · Ubiquitous Computing</p>
+    <h1>Clima por Voz</h1>
+    <p class="subtitle">Di la frase mágica y obtén el clima</p>
+  </header>
+
+  <!-- BOTÓN MICRÓFONO -->
+  <div class="mic-wrapper">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <button class="mic-btn" id="micBtn" onclick="iniciarEscucha()">
+      <span class="mic-icon">🎙️</span>
+    </button>
+  </div>
+
+  <p class="hint">Pulsa y di: <span>"¿Cuál es el clima?"</span></p>
+
+  <!-- LO QUE DETECTÓ EL MIC -->
+  <p id="transcripcion"></p>
+
+  <!-- MENSAJES DE ESTADO (cargando, errores...) -->
+  <p id="estado"></p>
+
+  <!-- TARJETA CON LOS DATOS DEL CLIMA -->
+  <div class="weather-card" id="weatherCard">
+    <div class="weather-header">
+      <div class="weather-icon" id="wIcon">🌤️</div>
+      <div>
+        <div class="weather-location" id="wCoords"></div>
+        <div class="weather-desc" id="wDesc"></div>
+      </div>
+    </div>
+    <div class="weather-stats">
+      <div class="stat">
+        <div class="stat-label">🌡️ Temperatura</div>
+        <div class="stat-value" id="wTemp">--<span class="stat-unit">°C</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">💨 Viento</div>
+        <div class="stat-value" id="wViento">--<span class="stat-unit">km/h</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// PASO 1: RECONOCIMIENTO DE VOZ (SpeechRecognition API)
+// ============================================================
+// Comprobamos si el navegador soporta SpeechRecognition.
+// Chrome lo llama webkitSpeechRecognition; Firefox aún no lo soporta.
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function iniciarEscucha() {
+  // Si el navegador no soporta la API, avisamos y salimos
+  if (!SpeechRecognition) {
+    mostrarEstado('❌ Tu navegador no soporta reconocimiento de voz. Usa Chrome.', 'error');
+    return;
+  }
+
+  // Creamos la instancia del reconocedor
+  const reconocedor = new SpeechRecognition();
+  reconocedor.lang = 'es-ES';       // Idioma: español de España
+  reconocedor.continuous = false;   // Para después de detectar 1 frase
+  reconocedor.interimResults = false; // Solo resultados finales (no borradores)
+
+  // Activamos el estilo visual "escuchando" en el botón
+  const btn = document.getElementById('micBtn');
+  btn.classList.add('listening');
+  document.getElementById('transcripcion').textContent = '';
+  ocultarClima();
+  mostrarEstado('<span class="spinner"></span> Escuchando…', 'loading');
+
+  // Cuando el reconocedor recibe un resultado
+  reconocedor.onresult = (evento) => {
+    // evento.results[0][0].transcript → el texto que reconoció
+    const textoReconocido = evento.results[0][0].transcript.toLowerCase().trim();
+    document.getElementById('transcripcion').textContent = `🗣️ "${textoReconocido}"`;
+
+    // Comprobamos si el usuario dijo algo parecido a "¿cuál es el clima?"
+    if (textoReconocido.includes('clima') || textoReconocido.includes('tiempo')) {
+      obtenerUbicacion(); // → PASO 2
+    } else {
+      mostrarEstado('❌ No entendí. Di: "¿Cuál es el clima?"', 'error');
+    }
+  };
+
+  // Si hay un error en el reconocimiento de voz
+  reconocedor.onerror = (evento) => {
+    btn.classList.remove('listening');
+    const mensajes = {
+      'no-speech':      '❌ No te escuché. Intenta de nuevo.',
+      'not-allowed':    '❌ Permiso de micrófono denegado.',
+      'network':        '❌ Error de red en el reconocimiento.',
+    };
+    mostrarEstado(mensajes[evento.error] || `❌ Error: ${evento.error}`, 'error');
+  };
+
+  // Cuando termina de escuchar, quitamos el estilo "listening"
+  reconocedor.onend = () => {
+    btn.classList.remove('listening');
+  };
+
+  // ¡Empezamos a escuchar!
+  reconocedor.start();
+}
+
+
+// ============================================================
+// PASO 2: GEOLOCALIZACIÓN (navigator.geolocation)
+// ============================================================
+// Pedimos al navegador la posición GPS del usuario.
+// El navegador le preguntará al usuario si acepta compartir su ubicación.
+function obtenerUbicacion() {
+  mostrarEstado('<span class="spinner"></span> Obteniendo ubicación GPS…', 'loading');
+
+  // getCurrentPosition recibe 3 argumentos:
+  //   1. Callback de ÉXITO → recibe objeto "posicion"
+  //   2. Callback de ERROR → recibe objeto "error"
+  //   3. Opciones
+  navigator.geolocation.getCurrentPosition(
+    (posicion) => {
+      // posicion.coords.latitude  → latitud
+      // posicion.coords.longitude → longitud
+      const lat = posicion.coords.latitude;
+      const lon = posicion.coords.longitude;
+      consultarClima(lat, lon); // → PASO 3
+    },
+    (error) => {
+      // Manejamos los distintos tipos de error de geolocalización
+      const mensajes = {
+        1: '❌ Permiso de ubicación denegado. Actívalo en el navegador.',
+        2: '❌ No se pudo obtener tu posición.',
+        3: '❌ Tiempo de espera agotado para la ubicación.',
+      };
+      mostrarEstado(mensajes[error.code] || '❌ Error de geolocalización.', 'error');
+    },
+    { timeout: 10000 } // Máximo 10 segundos para obtener la ubicación
+  );
+}
+
+
+// ============================================================
+// PASO 3: LLAMADA A LA API DE CLIMA (fetch + Open-Meteo)
+// ============================================================
+// Con la latitud y longitud, llamamos a Open-Meteo.
+// Open-Meteo es una API GRATUITA y sin clave (no necesita API key).
+//
+// URL de ejemplo:
+// https://api.open-meteo.com/v1/forecast
+//   ?latitude=40.4168
+//   &longitude=-3.7038
+//   &current_weather=true
+//
+// Devuelve JSON con temperatura, viento, código de clima, etc.
+async function consultarClima(lat, lon) {
+  mostrarEstado('<span class="spinner"></span> Consultando Open-Meteo…', 'loading');
+
+  // Construimos la URL con las coordenadas del usuario
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+  try {
+    // fetch() hace la petición HTTP GET a la API
+    // Es asíncrona → usamos await para esperar la respuesta
+    const respuesta = await fetch(url);
+
+    // Comprobamos que el servidor respondió correctamente (código 200-299)
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+
+    // Convertimos la respuesta (texto JSON) a un objeto JavaScript
+    const datos = await respuesta.json();
+
+    // Los datos del clima actual están en datos.current_weather
+    // Estructura de la respuesta:
+    // {
+    //   current_weather: {
+    //     temperature: 18.5,       ← temperatura en °C
+    //     windspeed: 12.3,         ← viento en km/h
+    //     weathercode: 2,          ← código WMO del estado del cielo
+    //     time: "2024-01-15T14:00" ← hora de la medición
+    //   }
+    // }
+    mostrarClima(datos.current_weather, lat, lon);
+
+  } catch (error) {
+    // Capturamos cualquier error (red caída, respuesta inválida, etc.)
+    mostrarEstado(`❌ Error al consultar la API: ${error.message}`, 'error');
+  }
+}
+
+
+// ============================================================
+// FUNCIONES AUXILIARES: MOSTRAR RESULTADOS EN PANTALLA
+// ============================================================
+
+// Códigos WMO → descripción e icono
+// Open-Meteo usa los códigos estándar WMO (World Meteorological Organization)
+function interpretarCodigo(code) {
+  if (code === 0)              return { desc: 'Despejado',          icono: '☀️'  };
+  if (code <= 2)               return { desc: 'Parcialmente nublado', icono: '⛅'  };
+  if (code === 3)              return { desc: 'Nublado',             icono: '☁️'  };
+  if (code >= 51 && code <= 67) return { desc: 'Lluvia',             icono: '🌧️'  };
+  if (code >= 71 && code <= 77) return { desc: 'Nieve',              icono: '❄️'  };
+  if (code >= 80 && code <= 82) return { desc: 'Chubascos',          icono: '🌦️'  };
+  if (code >= 95)              return { desc: 'Tormenta',            icono: '⛈️'  };
+  return { desc: 'Variable', icono: '🌤️' };
+}
+
+// Muestra la tarjeta del clima con los datos recibidos
+function mostrarClima(clima, lat, lon) {
+  const { desc, icono } = interpretarCodigo(clima.weathercode);
+
+  document.getElementById('wIcon').textContent   = icono;
+  document.getElementById('wCoords').textContent = `📍 ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+  document.getElementById('wDesc').textContent   = desc;
+
+  // Temperatura y viento
+  document.getElementById('wTemp').innerHTML   = `${clima.temperature}<span class="stat-unit">°C</span>`;
+  document.getElementById('wViento').innerHTML = `${clima.windspeed}<span class="stat-unit">km/h</span>`;
+
+  // Hacemos visible la tarjeta
+  const card = document.getElementById('weatherCard');
+  card.classList.remove('visible');
+  void card.offsetWidth; // forzamos reflow para re-lanzar la animación
+  card.classList.add('visible');
+
+  mostrarEstado('✅ Datos obtenidos correctamente', 'ok');
+}
+
+function ocultarClima() {
+  document.getElementById('weatherCard').classList.remove('visible');
+}
+
+// Muestra mensajes de estado (cargando, error, ok)
+function mostrarEstado(mensaje, tipo = '') {
+  const el = document.getElementById('estado');
+  el.innerHTML = mensaje;
+  el.className = tipo;
+}
+</script>
+</body>
+</html>
