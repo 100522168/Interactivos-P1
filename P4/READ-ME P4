@@ -1,0 +1,30 @@
+Parte 3: Práctica Fetch — Clima con Voz y GPS
+Aplicación web que detecta cuando el usuario pregunta "¿Cuál es el clima?", obtiene su ubicación mediante GPS y consulta la API de Open-Meteo para mostrar el clima actual.
+Tecnologías usadas:
+
+SpeechRecognition API (reconocimiento de voz)
+navigator.geolocation (GPS)
+fetch() + Open-Meteo API
+
+Cómo usarlo:
+
+Abre index.html en el navegador
+Pulsa el botón de micrófono y di "¿Cuál es el clima?"
+La app detecta tu ubicación y muestra la temperatura y el viento
+
+
+Parte 4: Práctica Express — Lista de Tareas
+API REST desarrollada con Node.js y Express para gestionar una lista de tareas, con persistencia en fichero JSON y una interfaz web que se comunica con la API en tiempo real.
+Tecnologías usadas:
+
+Node.js + Express
+Fichero tasks.json como base de datos
+fetch() en el cliente para comunicarse con la API
+
+Endpoints disponibles:
+MétodoRutaDescripciónGET/tasksObtener todas las tareasPOST/tasksCrear una nueva tareaPUT/tasks/:idActualizar una tareaDELETE/tasks/:idEliminar una tarea
+Cómo ejecutarlo:
+bashcd P4
+npm install
+node server.js
+Luego abre http://localhost:3000 en el navegador.
