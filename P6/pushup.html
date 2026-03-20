@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PushUp Counter — Computación Ubicua</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #22222f;
+    --accent: #00ff88;
+    --accent2: #ff4060;
+    --accent3: #4488ff;
+    --text: #e8e8f0;
+    --muted: #555570;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  header .badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  .main-layout {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    width: 100%;
+    max-width: 1200px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* VIDEO PANEL */
+  .video-panel {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  #video-container {
+    position: relative;
+    width: 560px;
+    height: 420px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0;
+  }
+
+  canvas#output {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+  }
+
+  /* POSTURE OVERLAY */
+  .posture-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  .posture-overlay.UP   { background: var(--accent); color: #000; }
+  .posture-overlay.DOWN { background: var(--accent2); color: #fff; }
+  .posture-overlay.NONE { background: var(--border); color: var(--muted); }
+
+  /* STATS PANEL */
+  .stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    min-width: 220px;
+    max-width: 300px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-card .label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .stat-card .value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--accent);
+    transition: transform 0.15s;
+  }
+
+  .stat-card .value.bump {
+    transform: scale(1.25);
+    color: #fff;
+  }
+
+  .stat-card.angle .value {
+    font-size: 2.5rem;
+    color: var(--accent3);
+  }
+
+  /* HEURISTIC PANEL */
+  .heuristic-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    font-size: 0.72rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  .heuristic-panel h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .rule { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .rule .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .rule .dot.up   { background: var(--accent); }
+  .rule .dot.down { background: var(--accent2); }
+  .rule .dot.rep  { background: var(--accent3); }
+
+  /* ANGLE BAR */
+  .angle-bar-wrapper {
+    margin-top: 8px;
+  }
+  .angle-bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .angle-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.1s, background 0.2s;
+    background: var(--accent3);
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border: 1px solid;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  #btn-start {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  #btn-start:hover { opacity: 0.85; }
+
+  #btn-reset {
+    background: transparent;
+    color: var(--accent2);
+    border-color: var(--accent2);
+  }
+  #btn-reset:hover { background: var(--accent2); color: #fff; }
+
+  /* LOG */
+  .log-panel {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 24px 24px;
+  }
+
+  .log-panel h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  #log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    height: 100px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  #log .entry { padding: 2px 0; border-bottom: 1px solid var(--border); }
+  #log .entry.rep { color: var(--accent); font-weight: 600; }
+
+  .status-bar {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid var(--border);
+    width: 100%;
+  }
+  .status-bar span { color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PushUp Counter</h1>
+  <div class="badge">MEDIAPIPE POSE</div>
+  <div class="badge" style="border-color:var(--accent3);color:var(--accent3)">HEURÍSTICA DE ÁNGULO</div>
+</header>
+
+<div class="main-layout">
+
+  <!-- VIDEO -->
+  <div class="video-panel">
+    <div id="video-container">
+      <video id="video" playsinline></video>
+      <canvas id="output"></canvas>
+      <div class="posture-overlay NONE" id="posture-label">—</div>
+    </div>
+    <br>
+    <div class="controls">
+      <button id="btn-start">▶ Iniciar cámara</button>
+      <button id="btn-reset">↺ Resetear</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-panel">
+
+    <div class="stat-card">
+      <div class="label">Repeticiones</div>
+      <div class="value" id="count-display">0</div>
+    </div>
+
+    <div class="stat-card angle">
+      <div class="label">Ángulo codo (izq)</div>
+      <div class="value" id="angle-display">—°</div>
+      <div class="angle-bar-wrapper">
+        <div class="angle-bar-track">
+          <div class="angle-bar-fill" id="angle-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="heuristic-panel">
+      <h3>📐 Heurísticas</h3>
+      <div class="rule">
+        <div class="dot up"></div>
+        <span>Ángulo codo <strong style="color:var(--accent)">&gt; 150°</strong> → postura ARRIBA</span>
+      </div>
+      <div class="rule">
+        <div class="dot down"></div>
+        <span>Ángulo codo <strong style="color:var(--accent2)">&lt; 90°</strong> → postura ABAJO</span>
+      </div>
+      <div class="rule">
+        <div class="dot rep"></div>
+        <span>Transición ABAJO→ARRIBA = <strong style="color:var(--accent3)">+1 rep</strong></span>
+      </div>
+      <br>
+      <div style="color:var(--muted);font-size:0.65rem">
+        Landmarks usados:<br>
+        Hombro (11) · Codo (13) · Muñeca (15)
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="log-panel">
+  <h3>Log de eventos</h3>
+  <div id="log"><div class="entry">Esperando inicio...</div></div>
+</div>
+
+<div class="status-bar">MediaPipe Pose · <span>Heurística de ángulo articular</span> · Computación Ubicua UC3M</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script>
+// ─── ESTADO GLOBAL ────────────────────────────────────────
+let repCount   = 0;       // contador de repeticiones
+let lastPosture = 'NONE'; // última postura detectada
+let wasDown    = false;   // flag: estuvo abajo en esta rep
+
+// Thresholds de la HEURÍSTICA
+const ANGLE_UP   = 150;   // ángulo codo → postura ARRIBA
+const ANGLE_DOWN = 90;    // ángulo codo → postura ABAJO
+
+// ─── REFERENCIAS DOM ──────────────────────────────────────
+const video       = document.getElementById('video');
+const canvas      = document.getElementById('output');
+const ctx         = canvas.getContext('2d');
+const postureLabel = document.getElementById('posture-label');
+const countDisplay = document.getElementById('count-display');
+const angleDisplay = document.getElementById('angle-display');
+const angleBar    = document.getElementById('angle-bar');
+const logEl       = document.getElementById('log');
+
+// ─── UTILIDAD: calcular ángulo entre 3 puntos ─────────────
+// Recibe tres landmarks {x,y} y devuelve el ángulo en grados
+// en el punto B (vértice = articulación)
+function calcAngle(A, B, C) {
+  const AB = { x: A.x - B.x, y: A.y - B.y };
+  const CB = { x: C.x - B.x, y: C.y - B.y };
+  const dot   = AB.x*CB.x + AB.y*CB.y;
+  const magAB = Math.sqrt(AB.x**2 + AB.y**2);
+  const magCB = Math.sqrt(CB.x**2 + CB.y**2);
+  const cos   = dot / (magAB * magCB);
+  return Math.round(Math.acos(Math.min(Math.max(cos, -1), 1)) * (180/Math.PI));
+}
+
+// ─── LOG ──────────────────────────────────────────────────
+function addLog(msg, isRep=false) {
+  const time = new Date().toLocaleTimeString('es', {hour12:false});
+  const div  = document.createElement('div');
+  div.className = 'entry' + (isRep ? ' rep' : '');
+  div.textContent = `[${time}] ${msg}`;
+  logEl.prepend(div);
+  // limitar a 30 entradas
+  while (logEl.children.length > 30) logEl.removeChild(logEl.lastChild);
+}
+
+// ─── ACTUALIZAR CONTADOR (con animación) ──────────────────
+function updateCount() {
+  countDisplay.textContent = repCount;
+  countDisplay.classList.add('bump');
+  setTimeout(() => countDisplay.classList.remove('bump'), 200);
+}
+
+// ─── LÓGICA PRINCIPAL: procesar resultados de MediaPipe ───
+function onResults(results) {
+  canvas.width  = results.image.width;
+  canvas.height = results.image.height;
+
+  // Dibujar imagen de cámara
+  ctx.save();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+  if (!results.poseLandmarks) {
+    ctx.restore();
+    return;
+  }
+
+  const lm = results.poseLandmarks;
+
+  // ── Dibujar esqueleto ──────────────────────────────────
+  drawConnectors(ctx, lm, POSE_CONNECTIONS, { color: '#334', lineWidth: 2 });
+  drawLandmarks (ctx, lm, { color: '#00ff88', lineWidth: 1, radius: 3 });
+
+  // ── Obtener landmarks relevantes ──────────────────────
+  // MediaPipe: 11=hombro izq, 13=codo izq, 15=muñeca izq
+  const shoulder = lm[11];
+  const elbow    = lm[13];
+  const wrist    = lm[15];
+
+  // ── Calcular ángulo del codo ───────────────────────────
+  const angle = calcAngle(shoulder, elbow, wrist);
+
+  // Actualizar barra y display de ángulo
+  angleDisplay.textContent = angle + '°';
+  const pct = Math.min((angle / 180) * 100, 100);
+  angleBar.style.width = pct + '%';
+  // Color dinámico de la barra según postura
+  if (angle < ANGLE_DOWN)       angleBar.style.background = 'var(--accent2)';
+  else if (angle > ANGLE_UP)    angleBar.style.background = 'var(--accent)';
+  else                           angleBar.style.background = 'var(--accent3)';
+
+  // Dibujar ángulo sobre el codo en el canvas
+  const ex = elbow.x * canvas.width;
+  const ey = elbow.y * canvas.height;
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 14px IBM Plex Mono, monospace';
+  ctx.fillText(angle + '°', ex + 8, ey - 8);
+
+  // ── HEURÍSTICA: determinar postura ────────────────────
+  let currentPosture = 'NONE';
+
+  if (angle > ANGLE_UP) {
+    currentPosture = 'UP';
+  } else if (angle < ANGLE_DOWN) {
+    currentPosture = 'DOWN';
+  }
+
+  // ── Actualizar etiqueta de postura ────────────────────
+  if (currentPosture !== lastPosture && currentPosture !== 'NONE') {
+    postureLabel.textContent = currentPosture === 'UP' ? '⬆ ARRIBA' : '⬇ ABAJO';
+    postureLabel.className   = 'posture-overlay ' + currentPosture;
+    addLog(`Postura detectada: ${currentPosture} (ángulo=${angle}°)`);
+    lastPosture = currentPosture;
+  }
+
+  // ── CONTAR REPETICIÓN ─────────────────────────────────
+  // Máquina de estados: DOWN → UP = 1 repetición completa
+  if (currentPosture === 'DOWN') {
+    wasDown = true;
+  }
+  if (currentPosture === 'UP' && wasDown) {
+    wasDown = false;
+    repCount++;
+    updateCount();
+    addLog(`✅ ¡Repetición #${repCount} completada!`, true);
+  }
+
+  ctx.restore();
+}
+
+// ─── INICIALIZAR MEDIAPIPE POSE ───────────────────────────
+const pose = new Pose({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+});
+
+pose.setOptions({
+  modelComplexity: 1,        // 0=lite, 1=full, 2=heavy
+  smoothLandmarks: true,     // suaviza landmarks entre frames
+  enableSegmentation: false,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+pose.onResults(onResults);
+
+// ─── BOTÓN: INICIAR CÁMARA ────────────────────────────────
+document.getElementById('btn-start').addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    await video.play();
+    addLog('Cámara iniciada');
+
+    // Camera utility de MediaPipe: envía cada frame a Pose
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        await pose.send({ image: video });
+      },
+      width: 560,
+      height: 420
+    });
+    camera.start();
+
+    document.getElementById('btn-start').textContent = '◉ En vivo';
+    document.getElementById('btn-start').style.background = 'var(--accent2)';
+  } catch(e) {
+    addLog('Error cámara: ' + e.message);
+    alert('No se pudo acceder a la cámara: ' + e.message);
+  }
+});
+
+// ─── BOTÓN: RESET ─────────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  repCount    = 0;
+  lastPosture = 'NONE';
+  wasDown     = false;
+  countDisplay.textContent  = '0';
+  angleDisplay.textContent  = '—°';
+  angleBar.style.width      = '0%';
+  postureLabel.textContent  = '—';
+  postureLabel.className    = 'posture-overlay NONE';
+  addLog('Contador reseteado');
+});
+</script>
+</body>
+</html>
