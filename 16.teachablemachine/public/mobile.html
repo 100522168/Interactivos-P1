@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mando - UC3M</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; display: flex;
+               flex-direction: column; align-items: center; justify-content: center;
+               min-height: 100vh; transition: background 0.5s; background: #1a1a1a; color: white; }
+        #clase { font-size: 3rem; font-weight: bold; margin-bottom: 10px; }
+        #probabilidad { font-size: 1.2rem; color: #ccc; }
+        #status { position: fixed; top: 10px; font-size: 0.8rem; }
+        #status.connected { color: #4caf50; }
+        #status.disconnected { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div id="status" class="disconnected">⚫ Conectando...</div>
+    <div id="clase">Esperando...</div>
+    <div id="probabilidad"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const claseDiv = document.getElementById('clase');
+        const probDiv = document.getElementById('probabilidad');
+        const statusDiv = document.getElementById('status');
+
+        const colores = {
+            'Class 1': '#e74c3c',
+            'Class 2': '#3498db',
+            'Class 3': '#2ecc71',
+            'Class 4': '#f39c12',
+        };
+
+        socket.on('connect', () => {
+            statusDiv.textContent = '🟢 Conectado';
+            statusDiv.className = 'connected';
+        });
+        socket.on('disconnect', () => {
+            statusDiv.textContent = '🔴 Desconectado';
+            statusDiv.className = 'disconnected';
+        });
+
+        socket.on('prediction', (data) => {
+            claseDiv.textContent = data.clase;
+            probDiv.textContent = `Probabilidad: ${(data.probabilidad * 100).toFixed(0)}%`;
+            document.body.style.background = colores[data.clase] || '#1a1a1a';
+        });
+    </script>
+</body>
+</html>

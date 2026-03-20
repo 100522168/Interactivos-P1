@@ -1,0 +1,45 @@
+
+Ejercicio voluntario hecho por: Estela de la Dueña Olivar y Celia Sánchez Cobo
+
+## Descripción
+
+Aplicación web en tiempo real donde un dispositivo actúa como mando a distancia 
+para controlar lo que se muestra en otra pantalla. Se integra un clasificador de 
+imágenes (Teachable Machine) con comunicación en tiempo real mediante Socket.IO.
+
+## Tecnologías utilizadas
+
+- **Node.js** — entorno de ejecución del servidor
+- **Express.js** — servidor HTTP que sirve los archivos estáticos
+- **Socket.IO** — comunicación bidireccional en tiempo real
+- **Teachable Machine** (@teachablemachine/image) — modelo de clasificación de imágenes
+- **TensorFlow.js** — ejecución del modelo en el navegador
+
+Luego abrir en el navegador:
+- `http://localhost:3000` → pantalla principal con la webcam
+- `http://localhost:3000/mobile` → pantalla del mando (o desde el móvil con la IP local)
+
+## Funcionamiento
+
+1. El servidor arranca y queda a la escucha en el puerto 3000.
+2. Cuando un cliente se conecta, Socket.IO registra el evento `connection`.
+3. El ordenador abre `index.html`, pulsa "Empezar" y activa la webcam.
+4. Teachable Machine analiza la imagen frame a frame y determina la clase con mayor probabilidad.
+5. `script.js` emite el evento `prediction` con `{ clase, probabilidad }` al servidor.
+6. El servidor hace `broadcast` del evento a todos los demás clientes conectados.
+7. `mobile.html` recibe el evento y actualiza el texto y el color de fondo en tiempo real.
+
+## Protocolo de intercambio de datos
+
+Se usa **Socket.IO** (WebSockets) para la comunicación en tiempo real.  
+El objeto JSON emitido en cada predicción tiene la siguiente estructura:
+```json
+{
+  "clase": "Class 1",
+  "probabilidad": "0.97"
+}
+```
+
+## Modelo de Teachable Machine
+
+Modelo utilizado: `https://teachablemachine.withgoogle.com/models/_4qfbSXm8/`
