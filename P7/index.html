@@ -1,0 +1,32 @@
+<!DOCTYPE html> <!-- Declara HTML5; sin esto el navegador entra en quirks mode -->
+<html lang="es"> <!-- lang="es" afecta a lectores de pantalla y correctores ortográficos -->
+<head>
+  <meta charset="UTF-8" /> <!-- Codificación UTF-8: necesaria para tildes y ñ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <!-- Evita zoom-out automático en móviles -->
+  <title>Chat con IA</title>
+  <link rel="stylesheet" href="style.css" /> <!-- CSS cargado de forma síncrona, evita flash de contenido sin estilo (FOUC) -->
+</head>
+<body>
+
+  <div id="app"> <!-- Contenedor raíz: flex column que apila header, mensajes e input -->
+
+    <header>
+      <h1>Chat con IA</h1>
+      <span id="status">Cargando modelo...</span> <!-- JS actualiza este texto según el estado del pipeline -->
+    </header>
+
+    <div id="messages"></div> <!-- Vacío al inicio; JS inyecta aquí cada mensaje dinámicamente -->
+
+    <div id="input-area">
+      <!-- disabled: bloquea interacción hasta que el modelo esté cargado; JS lo habilita cuando el pipeline está listo -->
+      <textarea id="user-input" placeholder="Escribe tu mensaje..." rows="2" disabled></textarea>
+      <!-- También deshabilitado durante cada inferencia para evitar envíos concurrentes -->
+      <button id="send-btn" disabled>Enviar</button>
+    </div>
+
+  </div>
+
+  <!-- type="module" activa ES Modules en el navegador: sin esto el import de script.js lanza SyntaxError -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>

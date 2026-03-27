@@ -1,0 +1,137 @@
+/* Reset universal: box-sizing border-box hace que padding y border se incluyan
+   dentro del width/height declarado, evitando desbordamientos inesperados */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  height: 100vh; /* Ocupa todo el alto de la ventana para poder centrar #app */
+  display: flex; /* Flexbox en body: patrón más limpio para centrado total */
+  justify-content: center; /* Centra #app horizontalmente */
+  align-items: center; /* Centra #app verticalmente */
+}
+
+#app {
+  width: 100%;
+  max-width: 700px; /* Limita la anchura en pantallas grandes para mantener legibilidad */
+  height: 90vh; /* El chat ocupa el 90% del viewport; el scroll ocurre dentro, no en el body */
+  display: flex;
+  flex-direction: column; /* Apila header, mensajes e input-area verticalmente */
+  background: #16213e;
+  border-radius: 12px;
+  overflow: hidden; /* Recorta los hijos para que respeten el border-radius del contenedor */
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+}
+
+header {
+  padding: 16px 20px;
+  background: #0f3460;
+  display: flex;
+  justify-content: space-between; /* Título a la izquierda, status a la derecha */
+  align-items: center;
+}
+
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#status {
+  font-size: 13px;
+  color: #f0a500; /* Naranja por defecto: indica estado de carga */
+}
+
+#status.ready {
+  color: #4caf50; /* Verde cuando el modelo está listo: JS añade esta clase */
+}
+
+#messages {
+  flex: 1; /* Ocupa todo el espacio disponible entre header e input-area */
+  overflow-y: auto; /* Scroll interno solo cuando el contenido lo requiere */
+  padding: 20px;
+  display: flex;
+  flex-direction: column; /* Los mensajes se apilan de arriba a abajo */
+  gap: 12px; /* Espaciado uniforme entre burbujas */
+}
+
+.message {
+  max-width: 80%; /* Las burbujas no ocupan todo el ancho, mejora la legibilidad */
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap; /* Respeta saltos de línea del texto generado */
+}
+
+/* align-self en flex column controla la alineación horizontal del hijo */
+.message.user {
+  background: #0f3460;
+  align-self: flex-end; /* Mensajes del usuario a la derecha */
+  border-bottom-right-radius: 2px; /* Truco visual clásico de chat bubble */
+}
+
+.message.assistant {
+  background: #1a4a6e;
+  align-self: flex-start; /* Respuestas del modelo a la izquierda */
+  border-bottom-left-radius: 2px; /* Idem, esquina opuesta */
+}
+
+/* Clase temporal aplicada mientras el modelo genera; JS la elimina al recibir la respuesta */
+.message.assistant.thinking {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+#input-area {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  background: #0f3460;
+}
+
+#user-input {
+  flex: 1; /* El textarea ocupa todo el espacio disponible dejando hueco al botón */
+  background: #16213e;
+  border: 1px solid #334;
+  color: #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  resize: none; /* Deshabilita el resize manual para no romper el layout */
+  font-family: sans-serif; /* Los textarea heredan fuente monospace por defecto en algunos navegadores */
+}
+
+/* Reemplaza el outline nativo por un cambio de borde que mantiene accesibilidad visual */
+#user-input:focus {
+  outline: none;
+  border-color: #f0a500;
+}
+
+#send-btn {
+  background: #f0a500;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s; /* Transición suave al hacer hover */
+}
+
+/* :not(:disabled) evita aplicar el hover cuando el botón está deshabilitado */
+#send-btn:hover:not(:disabled) {
+  background: #ffb830;
+}
+
+/* Feedback visual del estado deshabilitado; cursor: not-allowed refuerza que la acción no está disponible */
+#send-btn:disabled {
+  background: #555;
+  color: #888;
+  cursor: not-allowed;
+}

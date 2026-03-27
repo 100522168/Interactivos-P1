@@ -1,0 +1,173 @@
+/* Reset universal */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alineado arriba porque el contenido puede ser largo */
+  padding: 30px 16px;
+}
+
+#app {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f3460;
+  padding: 16px 20px;
+  border-radius: 12px;
+}
+
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#status {
+  font-size: 13px;
+  color: #f0a500; /* Naranja: cargando */
+}
+
+#status.ready {
+  color: #4caf50; /* Verde: modelo listo */
+}
+
+#status.listening {
+  color: #2196f3; /* Azul: escuchando micrófono */
+}
+
+/* Contenedor del canvas del visualizador de onda */
+#visualizer-container {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 12px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+#visualizer {
+  width: 100%;
+  height: 100%; /* El canvas ocupa todo el contenedor */
+}
+
+#controls {
+  display: flex;
+  gap: 12px;
+}
+
+#controls button {
+  flex: 1; /* Ambos botones del mismo ancho */
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#start-btn {
+  background: #4caf50;
+  color: #fff;
+}
+
+#start-btn:hover:not(:disabled) {
+  background: #66bb6a;
+}
+
+#stop-btn {
+  background: #e53935;
+  color: #fff;
+}
+
+#stop-btn:hover:not(:disabled) {
+  background: #ef5350;
+}
+
+#controls button:disabled {
+  background: #555;
+  color: #888;
+  cursor: not-allowed;
+}
+
+#results {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+#results h2 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Indicador parpadeante que aparece mientras el modelo está procesando */
+#streaming-indicator {
+  font-size: 12px;
+  color: #2196f3;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+#results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cada fila de resultado: etiqueta + barra de progreso + score */
+.result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-label {
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.result-label span:last-child {
+  color: #f0a500; /* Score en naranja para destacarlo */
+  font-weight: 600;
+}
+
+.result-bar-container {
+  background: #0f3460;
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.result-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #2196f3, #4caf50);
+  /* transition suave: cuando el score cambia entre ciclos la barra se anima */
+  transition: width 0.4s ease;
+}

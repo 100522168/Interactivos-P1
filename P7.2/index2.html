@@ -1,0 +1,40 @@
+<!DOCTYPE html> <!-- Declara HTML5 -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /> <!-- UTF-8 para tildes y caracteres especiales -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clasificador AST - Tiempo Real</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="app">
+
+    <header>
+      <h1>Clasificador de Audio</h1>
+      <span id="status">Cargando modelo...</span> <!-- JS actualiza este span según el estado del pipeline -->
+    </header>
+
+    <div id="visualizer-container">
+      <!-- Canvas donde se dibuja la onda de audio del micrófono en tiempo real -->
+      <canvas id="visualizer"></canvas>
+    </div>
+
+    <div id="controls">
+      <!-- Deshabilitado hasta que el modelo cargue -->
+      <button id="start-btn" disabled>Iniciar micrófono</button>
+      <button id="stop-btn" disabled>Detener</button>
+    </div>
+
+    <div id="results">
+      <h2>Resultados <span id="streaming-indicator"></span></h2>
+      <!-- JS inyecta aquí las barras de resultado con su score en tiempo real -->
+      <div id="results-list"></div>
+    </div>
+
+  </div>
+
+  <!-- type="module" necesario para usar import en el script -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
